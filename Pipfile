@@ -1,0 +1,6 @@
+[packages]
+gym = "==0.14.0"
+atari-py = "==0.2.6"
+
+[requires]
+python_version = "3.6"
