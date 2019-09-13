@@ -1,0 +1,14 @@
+0 - do nothing
+1 - do nothing?
+2 - move forward
+3 - turn right
+4 - turn left
+5 - disappear?
+6 - turn right
+7 - turn left and move forward?
+8 - shoot once and move forward
+9 - shoot once and turn right
+10 - shoot once and turn left
+11 - shoot once and disappear?
+12 - shoot once and turn right
+13 - shoot once and turn left
