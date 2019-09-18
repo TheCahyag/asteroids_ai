@@ -12,3 +12,40 @@
 11 - shoot once and disappear?
 12 - shoot once and turn right
 13 - shoot once and turn left
+
+Colors:
+
+Ship: 240, 128, 128
+Score Board: 184, 50, 50
+Asteroid Colors:
+- 180, 122, 48
+- 214, 214, 214
+
+-- Rendering 0 for ship, 1 for asteroids
+0
+0
+0
+1
+1
+1
+1
+0
+1
+0
+0
+1
+1
+0
+0
+0
+1
+0
+0
+1
+1
+1
+1
+1
+1
+--- 24 frames
+0
