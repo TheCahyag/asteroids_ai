@@ -6,7 +6,7 @@ import time
 import gym
 from gym import wrappers, logger
 
-from models import Ship, GameBoard
+from models import Ship, GameBoard, Asteroid
 from util import print_board
 
 
@@ -23,7 +23,7 @@ class Agent(object):
     # You should modify this function
     def act(self, observation, reward, done):
         zero_count = non_zero_count = 0
-        asteroids = None
+        asteroids = []
         board = GameBoard(observation)
 
         rgb_colors = set()
@@ -35,17 +35,21 @@ class Agent(object):
 
         while x < len(observation):
             while y < len(observation[0]):
-                rgb_vals = observation[x][y]
-                if board.check_pixel(x, y, GameBoard.BLANK_RGB):
-                    zero_count += 1
-                elif board.check_pixel(x, y, GameBoard.SHIP_RGB):
-                    ship_pixels.append([x, y])
-                else:
-                    # print(f'POS: {x}, {y}')
-                    rgb_string = f'{rgb_vals[0]}, {rgb_vals[1]}, {rgb_vals[2]}'
-                    # print(f'RGB: {rgb_string}')
-                    non_zero_count += 1
-                    rgb_colors.add(rgb_string)
+                if not board.is_location_explored(x, y):
+                    rgb_vals = observation[x][y]
+                    if board.check_pixel(x, y, GameBoard.BLANK_RGB):
+                        zero_count += 1
+                    elif board.check_pixel(x, y, GameBoard.SHIP_RGB):
+                        ship_pixels.append([x, y])
+                    elif board.is_pixel_asteroid(x, y):
+                        asteroids.append(Asteroid.create_asteroid(x, y, board))
+                    else:
+                        # print(f'POS: {x}, {y}')
+                        rgb_string = f'{rgb_vals[0]}, {rgb_vals[1]}, {rgb_vals[2]}'
+                        # print(f'RGB: {rgb_string}')
+                        non_zero_count += 1
+                        rgb_colors.add(rgb_string)
+                    board.explore_location(x, y)
                 y += 1
             x += 1
             y = 0
