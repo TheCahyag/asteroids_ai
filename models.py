@@ -6,16 +6,42 @@ class GameBoard:
     SHIP_RGB = [240, 128, 128]
     SCORE_RGB = [184, 50, 50]
     BLANK_RGB = [0, 0, 0]
+    ASTEROID_RGBS = [
+        [214, 214, 214],
+        [180, 122, 48],
+        [187, 187, 53]
+    ]
     BOMB_RGB = []  # TODO
 
     def __init__(self, game_map):
         self.game_map = game_map
-        pass
+
+        # 210x160
+        self.explored_mapping = [[False for i in range(160)] for j in range(210)]
+
+    def is_location_explored(self, x: int, y: int):
+        return self.explored_mapping[x][y]
+
+    def explore_location(self, x: int, y: int):
+        self.explored_mapping[x][y] = True
 
     def check_pixel(self, x, y, RGB_VALS):
+        """
+        Compare a pixel at a given x,y coord value with a given set of RGB values
+        :return True if the pixel at x,y is the same as the RGB values supplied, False otherwise
+        """
         return self.game_map[x][y][0] == RGB_VALS[0] and \
                self.game_map[x][y][1] == RGB_VALS[1] and \
                self.game_map[x][y][2] == RGB_VALS[2]
+
+    def is_pixel_asteroid(self, x: int, y: int):
+        """
+        Determines if the given location is an asteroid
+        """
+        for rgb_vals in GameBoard.ASTEROID_RGBS:
+            if self.check_pixel(x, y, rgb_vals):
+                return True
+        return False
 
 
 class Entity(ABC):
@@ -128,5 +154,51 @@ class Ship(Entity):
 
 class Asteroid(Entity):
 
+    @staticmethod
+    def create_asteroid(x: int, y: int, board: GameBoard):
+        """
+        Create an asteroid given one of it's locations and the game board
+        :return: built Asteroid
+        """
+        pixel_locations = []
+        new_pixels = [[x, y]]
+        while len(new_pixels) > 0:
+            x_pos, y_pos = new_pixels.pop()
+            pixel_locations.append([x_pos, y_pos])
+
+            i, j = -1, -1
+            while i <= 1:
+                while j <= 1:
+                    x_cur = x_pos + i
+                    y_cur = y_pos + j
+                    if x_cur == x_pos and y_cur == y_pos:
+                        j += 1
+                        continue
+                    else:
+                        if not board.is_location_explored(x_cur, y_cur) \
+                                and [x_cur, y_cur] not in pixel_locations \
+                                and [x_cur, y_cur] not in new_pixels \
+                                and board.check_pixel(x_cur, y_cur, board.game_map[x][y]):
+                            # Only look at the position if it hasn't been explored yet
+                            # and it isn't already in our pixel location set
+                            # and it isn't already in our new pixel array
+                            # and the position has the same RBG values as the original location given
+                            new_pixels.append([x_cur, y_cur])
+                            board.explore_location(x_cur, y_cur)
+                    j += 1
+                i += 1
+                j = -1
+            # Remove duplicates and return as list
+        a = Asteroid(pixel_locations)
+        print(a)
+        return a
+
     def __init__(self, pixel_locations):
         super().__init__(pixel_locations)
+        self.RGB_vals = pixel_locations[0]
+
+    def _get_area(self):
+        return len(self.xy_positions)
+
+    def __str__(self):
+        return f'Asteroid ({self.x_center}, {self.y_center}): Area = {self._get_area()}'
