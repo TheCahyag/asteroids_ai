@@ -6,15 +6,14 @@ import time
 import gym
 from gym import wrappers, logger
 
-from models import Ship, GameBoard, Asteroid
+from models.entity import Ship, GameBoard, Asteroid
 from util import print_board
-
-
 
 
 class Agent(object):
     last_action = 0
     last_ship = None
+    frame = 0
 
     """The world's simplest agent!"""
     def __init__(self, action_space):
@@ -24,7 +23,7 @@ class Agent(object):
     def act(self, observation, reward, done):
         zero_count = non_zero_count = 0
         asteroids = []
-        board = GameBoard(observation)
+        board = GameBoard(observation, Agent.frame)
 
         rgb_colors = set()
         ship_pixels = []
@@ -33,6 +32,7 @@ class Agent(object):
 
         print_board(board)
 
+        # Look through the game board to find the ship and/or asteroids
         while x < len(observation):
             while y < len(observation[0]):
                 if not board.is_location_explored(x, y):
@@ -58,18 +58,16 @@ class Agent(object):
             print(f'RGB Color: {rgb}')
         if len(ship_pixels) is not 0:
             self.last_ship = Ship(ship_pixels, self.last_ship)
+            board.register_entity(self.last_ship)
+        for asteroid in asteroids:
+            board.register_entity(asteroid)
+
+
 
         print(f'Zero: {zero_count}, Non Zero: {non_zero_count}')
+
+        Agent.frame += 1
         return 3
-        # if self.last_action is 5:
-        #     self.last_action = 4
-        #     return 4
-        # else:
-        #     self.last_action = 5
-        #     return 5
-
-
-
 
 
 # YOU MAY NOT MODIFY ANYTHING BELOW THIS LINE OR USE
