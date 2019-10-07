@@ -1,47 +1,6 @@
 import math
-from abc import ABC
-
-
-class GameBoard:
-    SHIP_RGB = [240, 128, 128]
-    SCORE_RGB = [184, 50, 50]
-    BLANK_RGB = [0, 0, 0]
-    ASTEROID_RGBS = [
-        [214, 214, 214],
-        [180, 122, 48],
-        [187, 187, 53]
-    ]
-    BOMB_RGB = []  # TODO
-
-    def __init__(self, game_map):
-        self.game_map = game_map
-
-        # 210x160
-        self.explored_mapping = [[False for i in range(160)] for j in range(210)]
-
-    def is_location_explored(self, x: int, y: int):
-        return self.explored_mapping[x][y]
-
-    def explore_location(self, x: int, y: int):
-        self.explored_mapping[x][y] = True
-
-    def check_pixel(self, x, y, RGB_VALS):
-        """
-        Compare a pixel at a given x,y coord value with a given set of RGB values
-        :return True if the pixel at x,y is the same as the RGB values supplied, False otherwise
-        """
-        return self.game_map[x][y][0] == RGB_VALS[0] and \
-               self.game_map[x][y][1] == RGB_VALS[1] and \
-               self.game_map[x][y][2] == RGB_VALS[2]
-
-    def is_pixel_asteroid(self, x: int, y: int):
-        """
-        Determines if the given location is an asteroid
-        """
-        for rgb_vals in GameBoard.ASTEROID_RGBS:
-            if self.check_pixel(x, y, rgb_vals):
-                return True
-        return False
+from abc import ABC, abstractmethod
+from models.game_board import GameBoard
 
 
 class Entity(ABC):
@@ -53,6 +12,7 @@ class Entity(ABC):
         self.xy_positions = pixel_locations
 
         self.x_high, self.x_low, self.y_high, self.y_low = 0, 1000, 0, 1000
+        self.movement_direction = None
 
         # Get the highest and lowest x and y values for the entity
         for x, y in self.xy_positions:
@@ -69,6 +29,10 @@ class Entity(ABC):
         self.x_center = (self.x_high + self.x_low) / 2
         self.y_center = (self.y_high + self.y_low) / 2
         print(f'Center: {self.x_center}, {self.y_center}, {self.__class__}')
+
+    @abstractmethod
+    def set_movement_direction(self, board: GameBoard):
+        pass
 
 
 class Ship(Entity):
@@ -123,11 +87,14 @@ class Ship(Entity):
 
         print(f'DEG: {self.direction_deg}')
 
+    def set_movement_direction(self, board: GameBoard):
+        pass
+
     def find_deg_angle_of_ship_tip(self, ship_tip):
         """
-        TODO
-        :param ship_tip:
-        :return:
+        Determine the degree of the ship
+        :param ship_tip: x,y coord of the tip of the ship
+        :return: degree from 0-359 degrees
         """
         # Find the equation of the line from the center point to the tip of the ship
         x1, y1 = ship_tip
@@ -196,6 +163,9 @@ class Asteroid(Entity):
     def __init__(self, pixel_locations):
         super().__init__(pixel_locations)
         self.RGB_vals = pixel_locations[0]
+
+    def set_movement_direction(self, board: GameBoard):
+        pass
 
     def _get_area(self):
         return len(self.xy_positions)
