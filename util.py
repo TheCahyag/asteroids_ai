@@ -1,6 +1,6 @@
 import math
 
-from models import GameBoard
+from models.game_board import GameBoard
 
 
 def print_board(board: GameBoard):
