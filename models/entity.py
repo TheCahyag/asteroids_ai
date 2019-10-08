@@ -1,18 +1,18 @@
-import math
-from abc import ABC, abstractmethod
+from abc import ABC
 from models.game_board import GameBoard
+from util import find_degree_of_line, find_closest_entity, find_distance
 
 
 class Entity(ABC):
 
-    def __init__(self, pixel_locations):
+    def __init__(self, pixel_locations, board: GameBoard, previous_entity=None):
         """
         :param pixel_locations: [x,y] locations
         """
         self.xy_positions = pixel_locations
+        self.frame = board.frame
 
         self.x_high, self.x_low, self.y_high, self.y_low = 0, 1000, 0, 1000
-        self.movement_direction = None
 
         # Get the highest and lowest x and y values for the entity
         for x, y in self.xy_positions:
@@ -28,21 +28,33 @@ class Entity(ABC):
         # Set the X,Y location of the center of the entity
         self.x_center = (self.x_high + self.x_low) / 2
         self.y_center = (self.y_high + self.y_low) / 2
-        print(f'Center: {self.x_center}, {self.y_center}, {self.__class__}')
 
-    @abstractmethod
-    def set_movement_direction(self, board: GameBoard):
-        pass
+        self.velocity_direction = None
+        self.velocity_magnitude = None
+        if previous_entity:
+            x1, y1 = previous_entity.x_center, previous_entity.y_center
+            x2, y2 = self.x_center, self.y_center
+
+            if x1 == x2 and y1 == y2:
+                # Leave the direction as None and the magnitude as 0 if the entity hasn't moved
+                self.velocity_magnitude = 0
+            else:
+                # Find the direction of the moving entity by finding the degree of the line that is drawn
+                self.velocity_direction = find_degree_of_line(x1, y1, x2, y2)
+                distance = find_distance(x1, y1, x2, y2)
+                self.velocity_magnitude = distance / (board.frame - previous_entity.frame)
+
+        print(f'Center: {self.x_center}, {self.y_center}, {self.__class__}')
 
 
 class Ship(Entity):
 
-    def __init__(self, pixel_locations, previous_ship=None):
+    def __init__(self, pixel_locations, board: GameBoard):
         """
         :param pixel_locations: [x,y] locations
-        :param previous_ship: Ship object representing the last position of the ship
         """
-        super().__init__(pixel_locations)
+        previous_ship = board.get_last_ship()
+        super().__init__(pixel_locations, board, previous_entity=previous_ship)
 
         self.ship_tip = None
 
@@ -87,9 +99,6 @@ class Ship(Entity):
 
         print(f'DEG: {self.direction_deg}')
 
-    def set_movement_direction(self, board: GameBoard):
-        pass
-
     def find_deg_angle_of_ship_tip(self, ship_tip):
         """
         Determine the degree of the ship
@@ -100,23 +109,7 @@ class Ship(Entity):
         x1, y1 = ship_tip
         x2, y2 = self.x_center, self.y_center
 
-        x_diff = x2 - x1
-        y_diff = y2 - y1
-        m = None
-        try:
-            m = -(y_diff / x_diff)
-        except ZeroDivisionError:
-            pass
-
-        if m is None or m == 0:
-            if x_diff < 0:
-                degree = 180
-            else:
-                degree = 0
-        else:
-            c = math.sqrt(abs(x_diff) ** 2 + abs(y_diff) ** 2)
-            degree = 180 * math.asin(abs(x_diff) / c) / math.pi
-        return degree
+        return find_degree_of_line(x1, y1, x2, y2)
 
 
 class Asteroid(Entity):
@@ -155,17 +148,14 @@ class Asteroid(Entity):
                     j += 1
                 i += 1
                 j = -1
-            # Remove duplicates and return as list
-        a = Asteroid(pixel_locations)
-        print(a)
-        return a
+        return Asteroid(pixel_locations, board)
 
-    def __init__(self, pixel_locations):
-        super().__init__(pixel_locations)
+    def __init__(self, pixel_locations, board: GameBoard):
+        super().__init__(pixel_locations, board)
+        previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
+        # Reinit the object since we have the previous asteroid now
+        super().__init__(pixel_locations, board, previous_entity=previous_asteroid)
         self.RGB_vals = pixel_locations[0]
-
-    def set_movement_direction(self, board: GameBoard):
-        pass
 
     def _get_area(self):
         return len(self.xy_positions)
