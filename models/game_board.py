@@ -1,4 +1,4 @@
-from models.entity import Asteroid, Ship, Entity
+from models.entity import Asteroid, Ship, Entity, Missile
 
 
 class GameBoard:
@@ -85,3 +85,12 @@ class GameBoard:
                 return asteroids
             i -= 1
         return []
+
+    def get_last_missile(self) -> Missile:
+        i = self.frame
+        while i >= 0:
+            for entity in GameBoard.GAME_OBJECTS[i]:
+                if isinstance(entity, Missile):
+                    return entity
+            i -= 1
+        return None
