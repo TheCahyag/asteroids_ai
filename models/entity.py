@@ -14,9 +14,8 @@ class Entity(ABC):
 
         self.x_high, self.x_low, self.y_high, self.y_low = 0, 1000, 0, 1000
 
-        if len(self.xy_positions) == 1:
-            # If the entity is only 1 pixel, set the high, low,
-            # and center values to be the same as the one pixel
+        if isinstance(self, Missile):
+            # If this is a missile, only use the first x, y coord set
             x, y = self.xy_positions[0]
             self.x_high, self.x_low, self.x_center = x, x, x
             self.y_high, self.y_low, self.y_center = y, y, y
@@ -58,6 +57,49 @@ class Entity(ABC):
 
 
 class Ship(Entity):
+
+    @staticmethod
+    def create_ship(x: int, y: int, board: GameBoard):
+        pixel_locations = []
+        new_pixels = [[x, y]]
+        while len(new_pixels) > 0:
+            x_pos, y_pos = new_pixels.pop()
+            pixel_locations.append([x_pos, y_pos])
+
+            i, j = -1, -1
+            while i <= 1:
+                while j <= 1:
+                    x_cur = x_pos + i
+                    y_cur = y_pos + j
+                    if x_cur == x_pos and y_cur == y_pos:
+                        j += 1
+                        continue
+                    else:
+                        if not (x_cur < 0 or y_cur < 0) \
+                                and not (x_cur >= 210 or y_cur >= 160) \
+                                and not board.is_location_explored(x_cur, y_cur) \
+                                and [x_cur, y_cur] not in pixel_locations \
+                                and [x_cur, y_cur] not in new_pixels \
+                                and board.check_pixel(x_cur, y_cur, board.game_map[x][y]):
+                            # Only look at the position if it the x, y coords are greater than 0
+                            # and the x,y coords are less than the bounds of the game board
+                            # and hasn't been explored yet
+                            # and it isn't already in our pixel location set
+                            # and it isn't already in our new pixel array
+                            # and the position has the same RBG values as the original location given
+                            new_pixels.append([x_cur, y_cur])
+                            board.explore_location(x_cur, y_cur)
+                    j += 1
+                i += 1
+                j = -1
+
+        if len(pixel_locations) <= 4:
+            # Unexplore the locations if it was a red missile
+            for x, y in pixel_locations:
+                board.explored_mapping[x][y] = False
+            return None
+        else:
+            return Ship(pixel_locations, board)
 
     def __init__(self, pixel_locations, board: GameBoard):
         """
@@ -187,19 +229,19 @@ class Missile(Entity):
     BLUE_MISSILE = 1
 
     def __init__(self, pixel_locations, board: GameBoard):
+        # We don't need the last missile in this case since nothing can really be
+        # done with that information, since the missile is no longer under control
+        # and isn't of interest
+        super().__init__(pixel_locations, board)
         # Determine if this is the red missile or the blue missile
         x, y = pixel_locations[0]
         if board.check_pixel(x, y, GameBoard.RED_MISSILE_RGB):
-            self.type = Missile.RED_MISSILE
+            self.missile_type = Missile.RED_MISSILE
         else:
-            self.type = Missile.BLUE_MISSILE
-        # Get the last blue or red missile
-        last_missile = board.get_last_missile(self.type)
-        super().__init__(pixel_locations, board, previous_entity=last_missile)
+            self.missile_type = Missile.BLUE_MISSILE
 
         print(self)
 
     def __str__(self):
-        return f'Missile ({self.x_center}, {self.y_center}): ' \
-            f'\n\tVelocity Direction: {self.velocity_direction}' \
-            f'\n\tVelocity Magnitude: {self.velocity_magnitude}'
+        missile_type = 'Red' if self.missile_type == Missile.RED_MISSILE else 'Blue'
+        return f'{missile_type} Missile ({self.x_center}, {self.y_center})'
