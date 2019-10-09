@@ -1,11 +1,11 @@
 from abc import ABC
-import models.game_board as gb
+from models.game_board import GameBoard
 from util import find_degree_of_line, find_closest_entity, find_distance
 
 
 class Entity(ABC):
 
-    def __init__(self, pixel_locations, board: gb.GameBoard, previous_entity=None):
+    def __init__(self, pixel_locations, board: GameBoard, previous_entity=None):
         """
         :param pixel_locations: [x,y] locations
         """
@@ -18,8 +18,8 @@ class Entity(ABC):
             # If the entity is only 1 pixel, set the high, low,
             # and center values to be the same as the one pixel
             x, y = self.xy_positions[0]
-            self.x_high, self.x_low, self.x_center = x
-            self.y_high, self.y_low, self.y_center = y
+            self.x_high, self.x_low, self.x_center = x, x, x
+            self.y_high, self.y_low, self.y_center = y, y, y
         else:
             # Get the highest and lowest x and y values for the entity
             for x, y in self.xy_positions:
@@ -53,10 +53,13 @@ class Entity(ABC):
 
         board.register_entity(self)
 
+    def get_area(self) -> int:
+        return len(self.xy_positions)
+
 
 class Ship(Entity):
 
-    def __init__(self, pixel_locations, board: gb.GameBoard):
+    def __init__(self, pixel_locations, board: GameBoard):
         """
         :param pixel_locations: [x,y] locations
         """
@@ -103,6 +106,7 @@ class Ship(Entity):
 
         assert self.ship_tip is not None
         self.direction_deg = self.find_deg_angle_of_ship_tip(self.ship_tip)
+        print(self)
 
     def find_deg_angle_of_ship_tip(self, ship_tip):
         """
@@ -118,11 +122,15 @@ class Ship(Entity):
 
 
 class Asteroid(Entity):
+    """
+    Entity to represent an Asteroid of a single color
+    """
 
     @staticmethod
-    def create_asteroid(x: int, y: int, board: gb.GameBoard):
+    def create_asteroid(x: int, y: int, board: GameBoard):
         """
-        Create an asteroid given one of it's locations and the game board
+        Create an asteroid given one of it's locations and the game board, this uses a basic search
+        algorithm to determine all the locations the asteroid occupies
         :return: built Asteroid
         """
         pixel_locations = []
@@ -140,11 +148,15 @@ class Asteroid(Entity):
                         j += 1
                         continue
                     else:
-                        if not board.is_location_explored(x_cur, y_cur) \
+                        if not (x_cur < 0 or y_cur < 0) \
+                                and not (x_cur >= 210 or y_cur >= 160) \
+                                and not board.is_location_explored(x_cur, y_cur) \
                                 and [x_cur, y_cur] not in pixel_locations \
                                 and [x_cur, y_cur] not in new_pixels \
                                 and board.check_pixel(x_cur, y_cur, board.game_map[x][y]):
-                            # Only look at the position if it hasn't been explored yet
+                            # Only look at the position if it the x, y coords are greater than 0
+                            # and the x,y coords are less than the bounds of the game board
+                            # and hasn't been explored yet
                             # and it isn't already in our pixel location set
                             # and it isn't already in our new pixel array
                             # and the position has the same RBG values as the original location given
@@ -155,25 +167,37 @@ class Asteroid(Entity):
                 j = -1
         return Asteroid(pixel_locations, board)
 
-    def __init__(self, pixel_locations, board: gb.GameBoard):
+    def __init__(self, pixel_locations, board: GameBoard):
         super().__init__(pixel_locations, board)
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
         # Reinit the object since we have the previous asteroid now
         super().__init__(pixel_locations, board, previous_entity=previous_asteroid)
         self.RGB_vals = pixel_locations[0]
-
-    def _get_area(self):
-        return len(self.xy_positions)
+        print(self)
 
     def __str__(self):
-        return f'Asteroid ({self.x_center}, {self.y_center}): Area = {self._get_area()}'
+        return f'Asteroid ({self.x_center}, {self.y_center}): Area = {self.get_area()}'
 
 
 class Missile(Entity):
+    """
+    Entity to represent the missile that gets shot out of the Ship
+    """
+    RED_MISSILE = 0
+    BLUE_MISSILE = 1
 
-    def __init__(self, pixel_locations, board: gb.GameBoard):
-        last_missile = board.get_last_missile()
+    def __init__(self, pixel_locations, board: GameBoard):
+        # Determine if this is the red missile or the blue missile
+        x, y = pixel_locations[0]
+        if board.check_pixel(x, y, GameBoard.RED_MISSILE_RGB):
+            self.type = Missile.RED_MISSILE
+        else:
+            self.type = Missile.BLUE_MISSILE
+        # Get the last blue or red missile
+        last_missile = board.get_last_missile(self.type)
         super().__init__(pixel_locations, board, previous_entity=last_missile)
+
+        print(self)
 
     def __str__(self):
         return f'Missile ({self.x_center}, {self.y_center}): ' \
