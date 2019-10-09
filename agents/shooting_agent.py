@@ -14,5 +14,3 @@ class ShootingAgent(AbstractAgent):
             return AsteroidsActions.DO_NOTHING.value
         self.frame += 1
         return AsteroidsActions.FIRE_TURN_RIGHT.value
-
-

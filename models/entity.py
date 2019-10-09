@@ -1,11 +1,11 @@
 from abc import ABC
-from models.game_board import GameBoard
+import models.game_board as gb
 from util import find_degree_of_line, find_closest_entity, find_distance
 
 
 class Entity(ABC):
 
-    def __init__(self, pixel_locations, board: GameBoard, previous_entity=None):
+    def __init__(self, pixel_locations, board: gb.GameBoard, previous_entity=None):
         """
         :param pixel_locations: [x,y] locations
         """
@@ -56,7 +56,7 @@ class Entity(ABC):
 
 class Ship(Entity):
 
-    def __init__(self, pixel_locations, board: GameBoard):
+    def __init__(self, pixel_locations, board: gb.GameBoard):
         """
         :param pixel_locations: [x,y] locations
         """
@@ -120,7 +120,7 @@ class Ship(Entity):
 class Asteroid(Entity):
 
     @staticmethod
-    def create_asteroid(x: int, y: int, board: GameBoard):
+    def create_asteroid(x: int, y: int, board: gb.GameBoard):
         """
         Create an asteroid given one of it's locations and the game board
         :return: built Asteroid
@@ -155,7 +155,7 @@ class Asteroid(Entity):
                 j = -1
         return Asteroid(pixel_locations, board)
 
-    def __init__(self, pixel_locations, board: GameBoard):
+    def __init__(self, pixel_locations, board: gb.GameBoard):
         super().__init__(pixel_locations, board)
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
         # Reinit the object since we have the previous asteroid now
@@ -171,7 +171,7 @@ class Asteroid(Entity):
 
 class Missile(Entity):
 
-    def __init__(self, pixel_locations, board: GameBoard):
+    def __init__(self, pixel_locations, board: gb.GameBoard):
         last_missile = board.get_last_missile()
         super().__init__(pixel_locations, board, previous_entity=last_missile)
 

@@ -34,7 +34,7 @@ class AbstractAgent(ABC):
                         ship_pixels.append([x, y])
                     elif self.board.check_pixel(x, y, GameBoard.MISSILE_RGB):
                         pass
-                    elif self.board.check_pixel(x, y, GameBoard.GAME_OBJECTS):
+                    elif self.board.check_pixel(x, y, GameBoard.SCORE_RGB):
                         # Score board and lives left
                         pass
                     else:

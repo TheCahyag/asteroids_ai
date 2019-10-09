@@ -1,4 +1,3 @@
-from models.entity import Asteroid, Ship, Entity, Missile
 
 
 class GameBoard:
@@ -10,7 +9,7 @@ class GameBoard:
         [180, 122, 48],
         [187, 187, 53]
     ]
-    MISSILE_RGB = []  # TODO
+    MISSILE_RGB = [117, 181, 239]
 
     # Record all Entities created for each frame of the game, this can
     # be used to check previous frames to see Ship or Asteroid data
@@ -49,7 +48,7 @@ class GameBoard:
                 return True
         return False
 
-    def register_entity(self, entity: Entity):
+    def register_entity(self, entity):
         """
         Add Entity to the mapping for this frame
         """
@@ -57,40 +56,46 @@ class GameBoard:
         current_entity_array.append(entity)
         GameBoard.GAME_OBJECTS[self.frame] = current_entity_array
 
-    def get_last_ship(self) -> Ship:
+    def get_last_ship(self):
         """
         :return: None if no Ships have appeared yet,
         otherwise the State of the ship in the most recent frame
         """
+        import models.entity as en
+
         i = self.frame
         while i >= 0:
             for entity in GameBoard.GAME_OBJECTS[i]:
-                if isinstance(entity, Ship):
+                if isinstance(entity, en.Ship):
                     return entity
             i -= 1
         return None
 
-    def get_last_asteroids(self) -> [Asteroid]:
+    def get_last_asteroids(self):
         """
         :return: Get the list of Asteroids from the most recent
         frame that had asteroids, otherwise an empty list
         """
-        asteroids: [Asteroid] = []
+        import models.entity as en
+
+        asteroids: [en.Asteroid] = []
         i = self.frame
         while i >= 0:
             for entity in GameBoard.GAME_OBJECTS[i]:
-                if isinstance(entity, Asteroid):
+                if isinstance(entity, en.Asteroid):
                     asteroids.append(entity)
             if len(asteroids) > 0:
                 return asteroids
             i -= 1
         return []
 
-    def get_last_missile(self) -> Missile:
+    def get_last_missile(self):
+        import models.entity as en
+
         i = self.frame
         while i >= 0:
             for entity in GameBoard.GAME_OBJECTS[i]:
-                if isinstance(entity, Missile):
+                if isinstance(entity, en.Missile):
                     return entity
             i -= 1
         return None

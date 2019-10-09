@@ -1,6 +1,5 @@
 import math
 
-from models.entity import Entity
 from models.game_board import GameBoard
 
 
@@ -20,7 +19,7 @@ def print_board(board: GameBoard):
     print(string)
 
 
-def find_closest_entity(entity: Entity, entities: [Entity], threshold=5) -> Entity:
+def find_closest_entity(entity, entities, threshold=5):
     """
     Find the entity in entities that is closest to entity
     :param entity: target entity
@@ -28,7 +27,9 @@ def find_closest_entity(entity: Entity, entities: [Entity], threshold=5) -> Enti
     :param threshold: if the distance is greater than this value they are too far away
     :return: The closest Entity or None
     """
-    closest: Entity = None
+    import models.entity as en
+
+    closest: en.Entity = None
     for e in entities:
         x1, y1 = entity.x_center, entity.y_center
         x2, y2 = e.x_center, e.y_center
