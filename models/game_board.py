@@ -10,7 +10,7 @@ class GameBoard:
         [180, 122, 48],
         [187, 187, 53]
     ]
-    BOMB_RGB = []  # TODO
+    MISSILE_RGB = []  # TODO
 
     # Record all Entities created for each frame of the game, this can
     # be used to check previous frames to see Ship or Asteroid data
