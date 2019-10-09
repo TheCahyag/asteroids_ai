@@ -102,17 +102,20 @@ class GameBoard:
             i -= 1
         return []
 
-    def get_last_missile(self, type: int):
+    def get_last_missile(self, missile_type: int):
+        """
+        Get the last red or blue missile (depending on the type specified)
+        """
         import models.entity as en
 
         # Start from the last frame so we don't recall entities that are in the current frame
         i = self.frame - 1
         # Don't go past two additional frames, missiles beyond that point are probably not the same
         j = self.frame - 3
-        while i >= j:
+        while i >= 0 and i >= j:
             for entity in GameBoard.GAME_OBJECTS[i]:
                 if isinstance(entity, en.Missile):
-                    if entity.type == type:
+                    if entity.missile_type == missile_type:
                         return entity
             i -= 1
         return None
