@@ -14,20 +14,27 @@ class Entity(ABC):
 
         self.x_high, self.x_low, self.y_high, self.y_low = 0, 1000, 0, 1000
 
-        # Get the highest and lowest x and y values for the entity
-        for x, y in self.xy_positions:
-            if x > self.x_high:
-                self.x_high = x
-            elif x < self.x_low:
-                self.x_low = x
-            if y > self.y_high:
-                self.y_high = y
-            elif y < self.y_low:
-                self.y_low = y
+        if len(self.xy_positions) == 1:
+            # If the entity is only 1 pixel, set the high, low,
+            # and center values to be the same as the one pixel
+            x, y = self.xy_positions[0]
+            self.x_high, self.x_low, self.x_center = x
+            self.y_high, self.y_low, self.y_center = y
+        else:
+            # Get the highest and lowest x and y values for the entity
+            for x, y in self.xy_positions:
+                if x > self.x_high:
+                    self.x_high = x
+                elif x < self.x_low:
+                    self.x_low = x
+                if y > self.y_high:
+                    self.y_high = y
+                elif y < self.y_low:
+                    self.y_low = y
 
-        # Set the X,Y location of the center of the entity
-        self.x_center = (self.x_high + self.x_low) / 2
-        self.y_center = (self.y_high + self.y_low) / 2
+            # Set the X,Y location of the center of the entity
+            self.x_center = (self.x_high + self.x_low) / 2
+            self.y_center = (self.y_high + self.y_low) / 2
 
         self.velocity_direction = None
         self.velocity_magnitude = None
@@ -44,7 +51,7 @@ class Entity(ABC):
                 distance = find_distance(x1, y1, x2, y2)
                 self.velocity_magnitude = distance / (board.frame - previous_entity.frame)
 
-        print(f'Center: {self.x_center}, {self.y_center}, {self.__class__}')
+        board.register_entity(self)
 
 
 class Ship(Entity):
@@ -96,8 +103,6 @@ class Ship(Entity):
 
         assert self.ship_tip is not None
         self.direction_deg = self.find_deg_angle_of_ship_tip(self.ship_tip)
-
-        print(f'DEG: {self.direction_deg}')
 
     def find_deg_angle_of_ship_tip(self, ship_tip):
         """
@@ -162,3 +167,15 @@ class Asteroid(Entity):
 
     def __str__(self):
         return f'Asteroid ({self.x_center}, {self.y_center}): Area = {self._get_area()}'
+
+
+class Missile(Entity):
+
+    def __init__(self, pixel_locations, board: GameBoard):
+        last_missile = board.get_last_missile()
+        super().__init__(pixel_locations, board, previous_entity=last_missile)
+
+    def __str__(self):
+        return f'Missile ({self.x_center}, {self.y_center}): ' \
+            f'\n\tVelocity Direction: {self.velocity_direction}' \
+            f'\n\tVelocity Magnitude: {self.velocity_magnitude}'
