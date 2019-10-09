@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from models.entity import Ship, Asteroid
+from models.entity import Ship, Asteroid, Missile
 from models.game_board import GameBoard
 from util import print_board
 
@@ -18,10 +18,12 @@ class AbstractAgent(ABC):
 
         # Keep track of the pixel for the ship
         ship_pixels = []
+        blue_missile_pixels = []
+        red_missile_pixels = []
 
         x, y = 0, 0
 
-        print_board(self.board)
+        # print_board(self.board)
 
         # Look through the game board to find the ship and/or asteroids
         while x < len(observation):
@@ -32,8 +34,10 @@ class AbstractAgent(ABC):
                         pass
                     elif self.board.check_pixel(x, y, GameBoard.SHIP_RGB):
                         ship_pixels.append([x, y])
-                    elif self.board.check_pixel(x, y, GameBoard.MISSILE_RGB):
-                        pass
+                    elif self.board.check_pixel(x, y, GameBoard.BLUE_MISSILE_RGB):
+                        blue_missile_pixels.append([x, y])
+                    elif self.board.check_pixel(x, y, GameBoard.RED_MISSILE_RGB):
+                        red_missile_pixels.append([x, y])
                     elif self.board.check_pixel(x, y, GameBoard.SCORE_RGB):
                         # Score board and lives left
                         pass
@@ -45,6 +49,13 @@ class AbstractAgent(ABC):
             x += 1
             y = 0
 
+        # Construct the ship, if present
         if len(ship_pixels) is not 0:
             Ship(ship_pixels, self.board)
+        # Construct the blue missile, if present
+        if len(blue_missile_pixels) is not 0:
+            Missile(blue_missile_pixels, self.board)
+        # Construct the red missile, if present
+        if len(red_missile_pixels) is not 0:
+            Missile(red_missile_pixels, self.board)
 
