@@ -1,73 +1,19 @@
 import argparse
-import sys
-import pdb
 import time
 
 import gym
-from gym import wrappers, logger
+from gym import logger
 
-from models.entity import Ship, GameBoard, Asteroid
-from util import print_board
+from agents.shooting_agent import ShootingAgent
 
 
-class Agent(object):
-    last_action = 0
-    last_ship = None
-    frame = 0
+class Agent(ShootingAgent):
 
-    """The world's simplest agent!"""
     def __init__(self, action_space):
-        self.action_space = action_space
+        super().__init__(action_space)
 
-    # You should modify this function
     def act(self, observation, reward, done):
-        zero_count = non_zero_count = 0
-        asteroids = []
-        board = GameBoard(observation, Agent.frame)
-
-        rgb_colors = set()
-        ship_pixels = []
-
-        x, y = 0, 0
-
-        print_board(board)
-
-        # Look through the game board to find the ship and/or asteroids
-        while x < len(observation):
-            while y < len(observation[0]):
-                if not board.is_location_explored(x, y):
-                    rgb_vals = observation[x][y]
-                    if board.check_pixel(x, y, GameBoard.BLANK_RGB):
-                        zero_count += 1
-                    elif board.check_pixel(x, y, GameBoard.SHIP_RGB):
-                        ship_pixels.append([x, y])
-                    elif board.is_pixel_asteroid(x, y):
-                        asteroids.append(Asteroid.create_asteroid(x, y, board))
-                    else:
-                        # print(f'POS: {x}, {y}')
-                        rgb_string = f'{rgb_vals[0]}, {rgb_vals[1]}, {rgb_vals[2]}'
-                        # print(f'RGB: {rgb_string}')
-                        non_zero_count += 1
-                        rgb_colors.add(rgb_string)
-                    board.explore_location(x, y)
-                y += 1
-            x += 1
-            y = 0
-
-        for rgb in rgb_colors:
-            print(f'RGB Color: {rgb}')
-        if len(ship_pixels) is not 0:
-            self.last_ship = Ship(ship_pixels, self.last_ship)
-            board.register_entity(self.last_ship)
-        for asteroid in asteroids:
-            board.register_entity(asteroid)
-
-
-
-        print(f'Zero: {zero_count}, Non Zero: {non_zero_count}')
-
-        Agent.frame += 1
-        return 3
+        return super().act(observation, reward, done)
 
 
 # YOU MAY NOT MODIFY ANYTHING BELOW THIS LINE OR USE
