@@ -9,7 +9,9 @@ class GameBoard:
         [180, 122, 48],
         [187, 187, 53]
     ]
-    MISSILE_RGB = [117, 181, 239]
+    BLUE_MISSILE_RGB = [117, 181, 239]
+    RED_MISSILE_RGB = [240, 128, 128]
+    MISSILE_RGBS = [BLUE_MISSILE_RGB, RED_MISSILE_RGB]
 
     # Record all Entities created for each frame of the game, this can
     # be used to check previous frames to see Ship or Asteroid data
@@ -19,7 +21,7 @@ class GameBoard:
         self.game_map = game_map
         self.frame = frame
 
-        # 210x160
+        # 210x160 array of initially False values
         self.explored_mapping = [[False for i in range(160)] for j in range(210)]
 
         GameBoard.GAME_OBJECTS[frame] = []
@@ -30,7 +32,7 @@ class GameBoard:
     def explore_location(self, x: int, y: int):
         self.explored_mapping[x][y] = True
 
-    def check_pixel(self, x, y, RGB_VALS):
+    def check_pixel(self, x, y, RGB_VALS) -> bool:
         """
         Compare a pixel at a given x,y coord value with a given set of RGB values
         :return True if the pixel at x,y is the same as the RGB values supplied, False otherwise
@@ -39,11 +41,20 @@ class GameBoard:
                self.game_map[x][y][1] == RGB_VALS[1] and \
                self.game_map[x][y][2] == RGB_VALS[2]
 
-    def is_pixel_asteroid(self, x: int, y: int):
+    def is_pixel_asteroid(self, x: int, y: int) -> bool:
         """
         Determines if the given location is an asteroid
         """
         for rgb_vals in GameBoard.ASTEROID_RGBS:
+            if self.check_pixel(x, y, rgb_vals):
+                return True
+        return False
+
+    def is_pixel_missile(self, x: int, y: int) -> bool:
+        """
+        Determines if the given location is an asteroid
+        """
+        for rgb_vals in GameBoard.MISSILE_RGBS:
             if self.check_pixel(x, y, rgb_vals):
                 return True
         return False
@@ -63,7 +74,8 @@ class GameBoard:
         """
         import models.entity as en
 
-        i = self.frame
+        # Start from the last frame so we don't recall entities that are in the current frame
+        i = self.frame - 1
         while i >= 0:
             for entity in GameBoard.GAME_OBJECTS[i]:
                 if isinstance(entity, en.Ship):
@@ -79,7 +91,8 @@ class GameBoard:
         import models.entity as en
 
         asteroids: [en.Asteroid] = []
-        i = self.frame
+        # Start from the last frame so we don't recall entities that are in the current frame
+        i = self.frame - 1
         while i >= 0:
             for entity in GameBoard.GAME_OBJECTS[i]:
                 if isinstance(entity, en.Asteroid):
@@ -89,13 +102,17 @@ class GameBoard:
             i -= 1
         return []
 
-    def get_last_missile(self):
+    def get_last_missile(self, type: int):
         import models.entity as en
 
-        i = self.frame
-        while i >= 0:
+        # Start from the last frame so we don't recall entities that are in the current frame
+        i = self.frame - 1
+        # Don't go past two additional frames, missiles beyond that point are probably not the same
+        j = self.frame - 3
+        while i >= j:
             for entity in GameBoard.GAME_OBJECTS[i]:
                 if isinstance(entity, en.Missile):
-                    return entity
+                    if entity.type == type:
+                        return entity
             i -= 1
         return None
