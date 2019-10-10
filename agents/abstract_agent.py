@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from models.entity import Ship, Asteroid, Missile
 from models.game_board import GameBoard
-from util import print_board
 
 
 class AbstractAgent(ABC):
@@ -33,11 +32,11 @@ class AbstractAgent(ABC):
                         # Skip blank pixels
                         pass
                     elif self.board.check_pixel(x, y, GameBoard.SHIP_RGB):
-                        ship_pixels.append([x, y])
+                        ship = Ship.create_ship(x, y, self.board)
+                        if ship is None:
+                            red_missile_pixels.append([x, y])
                     elif self.board.check_pixel(x, y, GameBoard.BLUE_MISSILE_RGB):
                         blue_missile_pixels.append([x, y])
-                    elif self.board.check_pixel(x, y, GameBoard.RED_MISSILE_RGB):
-                        red_missile_pixels.append([x, y])
                     elif self.board.check_pixel(x, y, GameBoard.SCORE_RGB):
                         # Score board and lives left
                         pass
