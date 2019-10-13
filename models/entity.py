@@ -60,38 +60,7 @@ class Ship(Entity):
 
     @staticmethod
     def create_ship(x: int, y: int, board: GameBoard):
-        pixel_locations = []
-        new_pixels = [[x, y]]
-        while len(new_pixels) > 0:
-            x_pos, y_pos = new_pixels.pop()
-            pixel_locations.append([x_pos, y_pos])
-
-            i, j = -1, -1
-            while i <= 1:
-                while j <= 1:
-                    x_cur = x_pos + i
-                    y_cur = y_pos + j
-                    if x_cur == x_pos and y_cur == y_pos:
-                        j += 1
-                        continue
-                    else:
-                        if not (x_cur < 0 or y_cur < 0) \
-                                and not (x_cur >= 210 or y_cur >= 160) \
-                                and not board.is_location_explored(x_cur, y_cur) \
-                                and [x_cur, y_cur] not in pixel_locations \
-                                and [x_cur, y_cur] not in new_pixels \
-                                and board.check_pixel(x_cur, y_cur, board.game_map[x][y]):
-                            # Only look at the position if it the x, y coords are greater than 0
-                            # and the x,y coords are less than the bounds of the game board
-                            # and hasn't been explored yet
-                            # and it isn't already in our pixel location set
-                            # and it isn't already in our new pixel array
-                            # and the position has the same RBG values as the original location given
-                            new_pixels.append([x_cur, y_cur])
-                            board.explore_location(x_cur, y_cur)
-                    j += 1
-                i += 1
-                j = -1
+        pixel_locations = board.gather_connecting_pixels(x, y)
 
         if len(pixel_locations) <= 4:
             # Unexplore the locations if it was a red missile
@@ -175,38 +144,7 @@ class Asteroid(Entity):
         algorithm to determine all the locations the asteroid occupies
         :return: built Asteroid
         """
-        pixel_locations = []
-        new_pixels = [[x, y]]
-        while len(new_pixels) > 0:
-            x_pos, y_pos = new_pixels.pop()
-            pixel_locations.append([x_pos, y_pos])
-
-            i, j = -1, -1
-            while i <= 1:
-                while j <= 1:
-                    x_cur = x_pos + i
-                    y_cur = y_pos + j
-                    if x_cur == x_pos and y_cur == y_pos:
-                        j += 1
-                        continue
-                    else:
-                        if not (x_cur < 0 or y_cur < 0) \
-                                and not (x_cur >= 210 or y_cur >= 160) \
-                                and not board.is_location_explored(x_cur, y_cur) \
-                                and [x_cur, y_cur] not in pixel_locations \
-                                and [x_cur, y_cur] not in new_pixels \
-                                and board.check_pixel(x_cur, y_cur, board.game_map[x][y]):
-                            # Only look at the position if it the x, y coords are greater than 0
-                            # and the x,y coords are less than the bounds of the game board
-                            # and hasn't been explored yet
-                            # and it isn't already in our pixel location set
-                            # and it isn't already in our new pixel array
-                            # and the position has the same RBG values as the original location given
-                            new_pixels.append([x_cur, y_cur])
-                            board.explore_location(x_cur, y_cur)
-                    j += 1
-                i += 1
-                j = -1
+        pixel_locations = board.gather_connecting_pixels(x, y)
         return Asteroid(pixel_locations, board)
 
     def __init__(self, pixel_locations, board: GameBoard):
