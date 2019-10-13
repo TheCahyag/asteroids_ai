@@ -16,7 +16,6 @@ class AbstractAgent(ABC):
         self.board = GameBoard(observation, self.frame)
 
         # Keep track of the pixel for the ship
-        ship_pixels = []
         blue_missile_pixels = []
         red_missile_pixels = []
 
@@ -41,6 +40,7 @@ class AbstractAgent(ABC):
                         # Score board and lives left
                         pass
                     else:
+                        # If the pixel hasn't been recognized yet then it's an asteroid
                         Asteroid.create_asteroid(x, y, self.board)
 
                     self.board.explore_location(x, y)
@@ -48,9 +48,6 @@ class AbstractAgent(ABC):
             x += 1
             y = 0
 
-        # Construct the ship, if present
-        if len(ship_pixels) is not 0:
-            Ship(ship_pixels, self.board)
         # Construct the blue missile, if present
         if len(blue_missile_pixels) is not 0:
             Missile(blue_missile_pixels, self.board)
