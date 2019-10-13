@@ -4,11 +4,6 @@ class GameBoard:
     SHIP_RGB = [240, 128, 128]
     SCORE_RGB = [184, 50, 50]
     BLANK_RGB = [0, 0, 0]
-    ASTEROID_RGBS = [
-        [214, 214, 214],
-        [180, 122, 48],
-        [187, 187, 53]
-    ]
     BLUE_MISSILE_RGB = [117, 181, 239]
     RED_MISSILE_RGB = [240, 128, 128]
     MISSILE_RGBS = [BLUE_MISSILE_RGB, RED_MISSILE_RGB]
@@ -40,15 +35,6 @@ class GameBoard:
         return self.game_map[x][y][0] == RGB_VALS[0] and \
                self.game_map[x][y][1] == RGB_VALS[1] and \
                self.game_map[x][y][2] == RGB_VALS[2]
-
-    def is_pixel_asteroid(self, x: int, y: int) -> bool:
-        """
-        Determines if the given location is an asteroid
-        """
-        for rgb_vals in GameBoard.ASTEROID_RGBS:
-            if self.check_pixel(x, y, rgb_vals):
-                return True
-        return False
 
     def is_pixel_missile(self, x: int, y: int) -> bool:
         """
@@ -119,3 +105,42 @@ class GameBoard:
                         return entity
             i -= 1
         return None
+
+    def gather_connecting_pixels(self, x: int, y: int):
+        """
+        Get all pixels that are connected and are the same color as the provided x,y pixel
+        :return: List of x,y coordinate pairs
+        """
+        pixel_locations = []
+        new_pixels = [[x, y]]
+        while len(new_pixels) > 0:
+            x_pos, y_pos = new_pixels.pop()
+            pixel_locations.append([x_pos, y_pos])
+
+            i, j = -1, -1
+            while i <= 1:
+                while j <= 1:
+                    x_cur = x_pos + i
+                    y_cur = y_pos + j
+                    if x_cur == x_pos and y_cur == y_pos:
+                        j += 1
+                        continue
+                    else:
+                        if not (x_cur < 0 or y_cur < 0) \
+                                and not (x_cur >= 210 or y_cur >= 160) \
+                                and not self.is_location_explored(x_cur, y_cur) \
+                                and [x_cur, y_cur] not in pixel_locations \
+                                and [x_cur, y_cur] not in new_pixels \
+                                and self.check_pixel(x_cur, y_cur, self.game_map[x][y]):
+                            # Only look at the position if it the x, y coords are greater than 0
+                            # and the x,y coords are less than the bounds of the game board
+                            # and hasn't been explored yet
+                            # and it isn't already in our pixel location set
+                            # and it isn't already in our new pixel array
+                            # and the position has the same RBG values as the original location given
+                            new_pixels.append([x_cur, y_cur])
+                            self.explore_location(x_cur, y_cur)
+                    j += 1
+                i += 1
+                j = -1
+        return pixel_locations
