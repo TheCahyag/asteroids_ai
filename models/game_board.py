@@ -13,6 +13,7 @@ class GameBoard:
     GAME_OBJECTS = {}
 
     def __init__(self, game_map, frame: int):
+        import models.entity as en
         self.game_map = game_map
         self.frame = frame
 
@@ -20,6 +21,8 @@ class GameBoard:
         self.explored_mapping = [[False for i in range(160)] for j in range(210)]
 
         GameBoard.GAME_OBJECTS[frame] = []
+        self.ship: en.Ship = None
+        self.asteroids: [en.Asteroid] = []
 
     def is_location_explored(self, x: int, y: int):
         return self.explored_mapping[x][y]
@@ -49,9 +52,14 @@ class GameBoard:
         """
         Add Entity to the mapping for this frame
         """
+        import models.entity as en
         current_entity_array = GameBoard.GAME_OBJECTS[self.frame]
         current_entity_array.append(entity)
         GameBoard.GAME_OBJECTS[self.frame] = current_entity_array
+        if isinstance(entity, en.Ship):
+            self.ship = entity
+        elif isinstance(entity, en.Asteroid):
+            self.asteroids.append(entity)
 
     def get_last_ship(self):
         """
