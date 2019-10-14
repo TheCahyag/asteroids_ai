@@ -38,6 +38,14 @@ class Entity(ABC):
         self.velocity_direction = None
         self.velocity_magnitude = None
         if previous_entity:
+            self.calculate_velocity(previous_entity)
+        board.register_entity(self)
+
+    def get_area(self) -> int:
+        return len(self.xy_positions)
+
+    def calculate_velocity(self, previous_entity):
+        if previous_entity:
             x1, y1 = previous_entity.x_center, previous_entity.y_center
             x2, y2 = self.x_center, self.y_center
 
@@ -48,12 +56,7 @@ class Entity(ABC):
                 # Find the direction of the moving entity by finding the degree of the line that is drawn
                 self.velocity_direction = find_degree_of_line(x1, y1, x2, y2)
                 distance = find_distance(x1, y1, x2, y2)
-                self.velocity_magnitude = distance / (board.frame - previous_entity.frame)
-
-        board.register_entity(self)
-
-    def get_area(self) -> int:
-        return len(self.xy_positions)
+                self.velocity_magnitude = distance / (self.frame - previous_entity.frame)
 
 
 class Ship(Entity):
@@ -150,9 +153,8 @@ class Asteroid(Entity):
     def __init__(self, pixel_locations, board: GameBoard):
         super().__init__(pixel_locations, board)
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
-        # Reinit the object since we have the previous asteroid now
-        super().__init__(pixel_locations, board, previous_entity=previous_asteroid)
-        self.RGB_vals = pixel_locations[0]
+        self.calculate_velocity(previous_asteroid)
+        self.RGB_vals = board.game_map[pixel_locations[0][0]][pixel_locations[0][1]]
         print(self)
 
     def __str__(self):
