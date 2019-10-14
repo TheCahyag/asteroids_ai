@@ -28,7 +28,7 @@ def find_distance(x1, y1, x2, y2):
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
-def find_degree_of_line(x1, y1, x2, y2):
+def find_degree_of_movement(x1, y1, x2, y2):
     """
     Find the degree of the line in a unit circle where x2,y2 is the origin and x1,y1 is the point on the circle
     """
@@ -37,7 +37,7 @@ def find_degree_of_line(x1, y1, x2, y2):
 
     x1, y1 = x2 + y_diff, y2 + x_diff
 
-    radius = math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
+    radius = find_distance(x1, y1, x2, y2)
 
     x_diff = x2 - x1
     y_diff = y2 - y1
@@ -45,42 +45,47 @@ def find_degree_of_line(x1, y1, x2, y2):
     # Get the edge cases
     if x_diff == 0:
         if y_diff > 0:
-            return 0
+            return 270
         elif y_diff < 0:
-            return 180
+            return 90
     elif y_diff == 0:
         if x_diff > 0:
-            return 90
+            return 180
         elif x_diff < 0:
-            return 270
+            return 0
 
-    angle = (math.sin(x_diff / radius) * 180) / math.pi
+    angle_rad = math.sin(abs(x_diff) / radius)
+    angle = (angle_rad * 180) / math.pi
 
-    if x_diff > 0 and y_diff > 0:
-        return 270 + angle
+    # Quad 1
+    if x_diff < 0 and y_diff < 0:
+        if find_distance(x1, y1, x2, y1) <= find_distance(x1, y1, x1, y2):
+            # The point is closer to quad 2
+            return 90 - angle
+        else:
+            # The point is closer to quad 4
+            return angle
+    # Quad 2
     elif x_diff > 0 and y_diff < 0:
-        return angle
+        if find_distance(x1, y1, x2, y1) <= find_distance(x1, y1, x1, y2):
+            # The point is closer to quad 1
+            return 90 + angle
+        else:
+            # The point is closer to quad 3
+            return 180 - angle
+    # Quad 3
+    elif x_diff > 0 and y_diff > 0:
+        if find_distance(x1, y1, x2, y1) <= find_distance(x1, y1, x1, y2):
+            # The point is closer to quad 2
+            return 180 + angle
+        else:
+            # The point is closer to quad 4
+            return 270 - angle
+    # Quad 4
     elif x_diff < 0 and y_diff > 0:
-        return 180 + angle
-    elif x_diff < 0 and y_diff < 0:
-        return 90 + angle
-
-
-# def find_degree_of_line(x1, y1, x2, y2):
-#     x_diff = x2 - x1
-#     y_diff = y2 - y1
-#     m = None
-#     try:
-#         m = -(y_diff / x_diff)
-#     except ZeroDivisionError:
-#         pass
-#
-#     if m is None or m == 0:
-#         if x_diff < 0:
-#             degree = 180
-#         else:
-#             degree = 0
-#     else:
-#         c = math.sqrt(abs(x_diff) ** 2 + abs(y_diff) ** 2)
-#         degree = 180 * math.asin(abs(x_diff) / c) / math.pi
-#     return degree
+        if find_distance(x1, y1, x2, y1) <= find_distance(x1, y1, x1, y2):
+            # The point is closer to quad 3
+            return 270 + angle
+        else:
+            # The point is closer to quad 1
+            return 360 - angle
