@@ -1,6 +1,7 @@
 from abc import ABC
 from models.game_board import GameBoard
-from util import find_degree_of_line, find_closest_entity, find_distance
+from util.debug_util import print_me
+from util.util import find_degree_of_movement, find_closest_entity, find_distance
 
 
 class Entity(ABC):
@@ -45,6 +46,10 @@ class Entity(ABC):
         return len(self.xy_positions)
 
     def calculate_velocity(self, previous_entity):
+        """
+        Calculate the entities speed and direction
+        :return: None, self.velocity_magnitude and self.velocity_direction get set
+        """
         if previous_entity:
             x1, y1 = previous_entity.x_center, previous_entity.y_center
             x2, y2 = self.x_center, self.y_center
@@ -54,7 +59,7 @@ class Entity(ABC):
                 self.velocity_magnitude = 0
             else:
                 # Find the direction of the moving entity by finding the degree of the line that is drawn
-                self.velocity_direction = find_degree_of_line(x1, y1, x2, y2)
+                self.velocity_direction = find_degree_of_movement(x1, y1, x2, y2)
                 distance = find_distance(x1, y1, x2, y2)
                 self.velocity_magnitude = distance / (self.frame - previous_entity.frame)
 
@@ -132,7 +137,10 @@ class Ship(Entity):
         x1, y1 = ship_tip
         x2, y2 = self.x_center, self.y_center
 
-        return find_degree_of_line(x1, y1, x2, y2)
+        return find_degree_of_movement(x1, y1, x2, y2)
+
+    def __str__(self):
+        return f'Ship ({self.x_center}, {self.y_center}):\n\tDEG {self.direction_deg}\n\tShip Tip: {self.ship_tip}'
 
 
 class Asteroid(Entity):
@@ -155,10 +163,14 @@ class Asteroid(Entity):
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
         self.calculate_velocity(previous_asteroid)
         self.RGB_vals = board.game_map[pixel_locations[0][0]][pixel_locations[0][1]]
-        print(self)
+        print_me(self)
 
     def __str__(self):
-        return f'Asteroid ({self.x_center}, {self.y_center}): Area = {self.get_area()}'
+        return f'Asteroid ({self.x_center}, {self.y_center}): \n\tArea: {self.get_area()}' \
+            f'\n\tX low, high: {self.x_low}, {self.x_high}' \
+            f'\n\tY low, high: {self.y_low}, {self.y_high}' \
+            f'\n\tVel Mag: {self.velocity_magnitude}' \
+            f'\n\tVel Dir: {self.velocity_direction}'
 
 
 class Missile(Entity):
