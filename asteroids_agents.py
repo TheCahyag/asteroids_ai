@@ -55,7 +55,7 @@ if __name__ == '__main__':
             ob, reward, done, x = env.step(action)
             score += reward
             env.render()
-            # time.sleep(20 / 1000)
+            time.sleep(20 / 1000)
         print(f'Asteroids score [{i}]: {score}')
         runs += 1
 
