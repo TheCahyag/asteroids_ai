@@ -63,8 +63,16 @@ class Entity(ABC):
                 distance = find_distance(x1, y1, x2, y2)
                 self.velocity_magnitude = distance / (self.frame - previous_entity.frame)
 
+    def __str__(self):
+        return f'\n\tArea: {self.get_area()}' \
+            f'\n\tX low, high: {self.x_low}, {self.x_high}' \
+            f'\n\tY low, high: {self.y_low}, {self.y_high}' \
+            f'\n\tVel Mag: {self.velocity_magnitude}' \
+            f'\n\tVel Dir: {self.velocity_direction}'
+
 
 class Ship(Entity):
+    TURNING_SPEED = 360 / 64
 
     @staticmethod
     def create_ship(x: int, y: int, board: GameBoard):
@@ -125,7 +133,7 @@ class Ship(Entity):
 
         assert self.ship_tip is not None
         self.direction_deg = self.find_deg_angle_of_ship_tip(self.ship_tip)
-        print(self)
+        print_me(self)
 
     def find_deg_angle_of_ship_tip(self, ship_tip):
         """
@@ -140,7 +148,9 @@ class Ship(Entity):
         return find_degree_of_movement(x1, y1, x2, y2)
 
     def __str__(self):
-        return f'Ship ({self.x_center}, {self.y_center}):\n\tDEG {self.direction_deg}\n\tShip Tip: {self.ship_tip}'
+        return f'Ship ({self.x_center}, {self.y_center}):\n\tDEG {self.direction_deg}' \
+            f'\n\tShip Tip: {self.ship_tip} ' \
+            f'{super().__str__()}'
 
 
 class Asteroid(Entity):
@@ -166,11 +176,7 @@ class Asteroid(Entity):
         print_me(self)
 
     def __str__(self):
-        return f'Asteroid ({self.x_center}, {self.y_center}): \n\tArea: {self.get_area()}' \
-            f'\n\tX low, high: {self.x_low}, {self.x_high}' \
-            f'\n\tY low, high: {self.y_low}, {self.y_high}' \
-            f'\n\tVel Mag: {self.velocity_magnitude}' \
-            f'\n\tVel Dir: {self.velocity_direction}'
+        return f'Asteroid ({self.x_center}, {self.y_center}): {super().__str__()}'
 
 
 class Missile(Entity):
@@ -179,21 +185,21 @@ class Missile(Entity):
     """
     RED_MISSILE = 0
     BLUE_MISSILE = 1
+    # Speed determined experimentally
+    SPEED = 3.1622
 
     def __init__(self, pixel_locations, board: GameBoard):
-        # We don't need the last missile in this case since nothing can really be
-        # done with that information, since the missile is no longer under control
-        # and isn't of interest
-        super().__init__(pixel_locations, board)
         # Determine if this is the red missile or the blue missile
         x, y = pixel_locations[0]
         if board.check_pixel(x, y, GameBoard.RED_MISSILE_RGB):
             self.missile_type = Missile.RED_MISSILE
         else:
             self.missile_type = Missile.BLUE_MISSILE
+        last_missile = board.get_last_missile(self.missile_type)
+        super().__init__(pixel_locations, board, last_missile)
 
-        print(self)
+        print_me(self)
 
     def __str__(self):
         missile_type = 'Red' if self.missile_type == Missile.RED_MISSILE else 'Blue'
-        return f'{missile_type} Missile ({self.x_center}, {self.y_center})'
+        return f'{missile_type} Missile ({self.x_center}, {self.y_center}): {super().__str__()}'
