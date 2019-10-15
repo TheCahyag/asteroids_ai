@@ -173,7 +173,6 @@ class Asteroid(Entity):
         self.transposed = transposed
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
         self.calculate_velocity(previous_asteroid)
-        self.RGB_vals = board.game_map[pixel_locations[0][0]][pixel_locations[0][1]]
         print_me(self)
 
     def __str__(self):
