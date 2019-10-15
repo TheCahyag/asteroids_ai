@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 def find_closest_entity(entity, entities, threshold=5):
@@ -89,3 +90,62 @@ def find_degree_of_movement(x1, y1, x2, y2):
         else:
             # The point is closer to quad 1
             return 360 - angle
+
+
+def x_y_split_based_on_angle(angle: float) -> (float, float):
+    if angle == 0 or angle == 360:
+        return 1, 0
+    elif angle == 90:
+        return 0, -1
+    elif angle == 180:
+        return -1, 0
+    elif angle == 270:
+        return 0, 1
+
+    # Quad 1
+    if 0 < angle < 90:
+        return ((90 - (angle % 90)) / 90), -(angle % 90 / 90)
+    # Quad 2
+    elif 90 < angle < 180:
+        return -(angle % 90 / 90), -((90 - (angle % 90)) / 90)
+    # Quad 3
+    elif 180 < angle < 270:
+        return -((90 - (angle % 90)) / 90), (angle % 90 / 90)
+    # Quad 4
+    elif 270 < angle < 360:
+        return (angle % 90 / 90), ((90 - (angle % 90)) / 90)
+
+
+def matrix_add_vector(matrix, vector):
+    """
+    Matrix should be in the form of
+    [
+        [x1, y1],
+        [x2, y2],
+        [xn, yn]
+    ]
+    Vector should be in the form of
+    [
+        x
+        y
+    ]
+    :return: A 2D array (following the same format as received) of xy coordinates
+    """
+    # Mold the matrix into a 2 row matrix
+    xs = []
+    ys = []
+    for array in matrix:
+        xs.append(array[0])
+        ys.append(array[1])
+    m = np.array([xs, ys])
+    v = np.array([[vector[0]], [vector[1]]])
+
+    m_mod = m + v
+
+    return_array = []
+    i = 0
+    while i < len(m_mod[0]):
+        column = m_mod[:, i]
+        return_array.append([column[0], column[1]])
+        i += 1
+    return return_array
