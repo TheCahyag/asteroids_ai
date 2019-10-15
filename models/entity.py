@@ -168,8 +168,9 @@ class Asteroid(Entity):
         pixel_locations = board.gather_connecting_pixels(x, y)
         return Asteroid(pixel_locations, board)
 
-    def __init__(self, pixel_locations, board: GameBoard):
+    def __init__(self, pixel_locations, board: GameBoard, transposed=False):
         super().__init__(pixel_locations, board)
+        self.transposed = transposed
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
         self.calculate_velocity(previous_asteroid)
         self.RGB_vals = board.game_map[pixel_locations[0][0]][pixel_locations[0][1]]
