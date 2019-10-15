@@ -144,8 +144,7 @@ def matrix_add_vector(matrix, vector):
 
     return_array = []
     i = 0
-    while i < len(m_mod[0]):
-        column = m_mod[:, i]
-        return_array.append([column[0], column[1]])
+    while i < len(m_mod[0][0]):
+        return_array.append([m_mod[0][0][i], m_mod[1][0][i]])
         i += 1
     return return_array
