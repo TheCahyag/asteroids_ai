@@ -3,6 +3,7 @@ import enum
 
 class AsteroidsActions(enum.Enum):
     DO_NOTHING = 0
+    FIRE = 1
     MOVE_FORWARD = 2
     TURN_RIGHT = 3
     TURN_LEFT = 4
