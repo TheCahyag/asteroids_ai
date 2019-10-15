@@ -35,10 +35,16 @@ class ShootingAgent(AbstractAgent):
             # Find the asteroid closest to the ship
             closest_asteroid, distance = None, 1000
             for asteroid in asteroids:
+                if self.last_target is not None:
+                    distance_from_last_target = find_distance(asteroid.x_center, asteroid.y_center,
+                                                              self.last_target.x_center, self.last_target.y_center)
+                    if distance_from_last_target <= 10:
+                        # If the asteroid is within 10 pixels of the last target
+                        continue
+                if asteroid.velocity_direction is None or asteroid.velocity_magnitude is None:
+                    # Skip asteroids that can't have movement tracked
+                    continue
                 d = find_distance(ship.x_center, ship.y_center, asteroid.x_center, asteroid.y_center)
-                if asteroid.velocity_direction is None or asteroid.velocity_magnitude is None or d < 10:
-                    # Skip asteroids that can't have movement tracked or are within 10 pixels of the last target
-                    pass
                 if d < distance:
                     closest_asteroid = asteroid
             self.target = closest_asteroid
