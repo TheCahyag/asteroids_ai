@@ -49,3 +49,9 @@ Asteroid Colors:
 1
 --- 24 frames
 0
+
+
+from util.util import *
+xy = [[2, 1], [1, 2], [2, 2], [3, 2], [2, 3]]
+v = [0, 1]
+x = matrix_add_vector(xy, v)
