@@ -1,10 +1,13 @@
 from models.game_board import GameBoard
 
 debug = False
+p_board = False
 
 
 def print_me(obj):
-    if debug:
+    import models.entity as en
+
+    if debug and (isinstance(obj, en.Ship) or isinstance(obj, en.Missile)):
         print(obj)
 
 
@@ -30,7 +33,7 @@ def print_asteroid(asteroid):
 
 
 def print_board(board: GameBoard):
-    if debug:
+    if debug and p_board:
         string = ''
         x, y = 0, 0
         while x < len(board.game_map):

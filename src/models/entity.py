@@ -1,6 +1,5 @@
 from abc import ABC
 from models.game_board import GameBoard
-from util.debug_util import print_me
 from util.util import find_degree_of_movement, find_closest_entity, find_distance
 
 
@@ -72,13 +71,13 @@ class Entity(ABC):
 
 
 class Ship(Entity):
-    TURNING_SPEED = 360 / 64
+    TURNING_SPEED = 360 / 45
 
     @staticmethod
     def create_ship(x: int, y: int, board: GameBoard):
         pixel_locations = board.gather_connecting_pixels(x, y)
 
-        if len(pixel_locations) <= 4:
+        if len(pixel_locations) <= 15:
             # Unexplore the locations if it was a red missile
             for x, y in pixel_locations:
                 board.explored_mapping[x][y] = False
@@ -125,15 +124,16 @@ class Ship(Entity):
                 for potential_ship_tip in potential_ship_tips:
                     degrees_for_ship_tips.append(self.find_deg_angle_of_ship_tip(potential_ship_tip))
                 degrees_for_ship_tips[:] = [x - previous_ship.direction_deg for x in degrees_for_ship_tips]
-                self.ship_tip = potential_ship_tips[degrees_for_ship_tips.index(min(degrees_for_ship_tips, key=abs))]
-
+                if len(degrees_for_ship_tips):
+                    self.ship_tip = \
+                        potential_ship_tips[degrees_for_ship_tips.index(min(degrees_for_ship_tips, key=abs))]
             else:
                 # Otherwise pick the first potential_ship_tip in the list and hope for the best
                 self.ship_tip = potential_ship_tips[0]
 
-        assert self.ship_tip is not None
+        if self.ship_tip is None:
+            self.ship_tip = self.xy_positions[0]
         self.direction_deg = self.find_deg_angle_of_ship_tip(self.ship_tip)
-        print_me(self)
 
     def find_deg_angle_of_ship_tip(self, ship_tip):
         """
@@ -173,7 +173,6 @@ class Asteroid(Entity):
         self.transposed = transposed
         previous_asteroid = find_closest_entity(self, board.get_last_asteroids())
         self.calculate_velocity(previous_asteroid)
-        print_me(self)
 
     def __str__(self):
         return f'Asteroid ({self.x_center}, {self.y_center}): {super().__str__()}'
@@ -197,8 +196,6 @@ class Missile(Entity):
             self.missile_type = Missile.BLUE_MISSILE
         last_missile = board.get_last_missile(self.missile_type)
         super().__init__(pixel_locations, board, last_missile)
-
-        print_me(self)
 
     def __str__(self):
         missile_type = 'Red' if self.missile_type == Missile.RED_MISSILE else 'Blue'

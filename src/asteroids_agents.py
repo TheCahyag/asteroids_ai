@@ -5,8 +5,9 @@ import time
 import gym
 from gym import logger
 
+from agents.direction_minimize_agent import DegreeMinimizing
 from agents.random_agent import RandomAgent
-from agents.shooting_agent import ShootingAgent
+from agents.distance_minimize_agent import DistanceMinimizing
 
 # Structuring the arguments
 parser = argparse.ArgumentParser(description='Main program to run Asteroids using an agent to play. This easily '
@@ -18,8 +19,9 @@ parser = argparse.ArgumentParser(description='Main program to run Asteroids usin
                                              ' Run the shooting agent for a single game',
                                  formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog='Programmed by Brandon Bires-Navel (brn5915@rit.edu)')
-parser.add_argument('agent', metavar='agent', type=str, choices=['random', 'shooting'],
-                    help='Specify the agent you want to use to play Asteroids.... Available Agents: Random, Shooting')
+parser.add_argument('agent', metavar='agent', type=str, choices=['random', 'dis-min', 'deg-min'],
+                    help='Specify the agent you want to use to play Asteroids.... '
+                         'Available Agents: random, dis-min, deg-min')
 parser.add_argument('--runs', dest='runs', metavar='N', type=int, nargs=1, default=1,
                     help='Number of games to play (default: 1)')
 parser.add_argument('--seed', dest='seed', metavar='S', type=int, nargs=1, default=random.randint,
@@ -36,9 +38,10 @@ if __name__ == '__main__':
     agent_arg = asteroids_args.agent
     if agent_arg == 'random':
         agent = RandomAgent(env.action_space)
-    elif agent_arg == 'shooting':
-        agent = ShootingAgent(env.action_space)
-
+    elif agent_arg == 'dis-min':
+        agent = DistanceMinimizing(env.action_space)
+    elif agent_arg == 'deg-min':
+        agent = DegreeMinimizing(env.action_space)
     env.seed(asteroids_args.seed[0])
     runs = 0
     while runs < asteroids_args.runs[0]:
@@ -50,12 +53,13 @@ if __name__ == '__main__':
         ob = env.reset()
         i = 0
         while not done:
-            i += 1
             action = agent.act(ob, reward, done)
             ob, reward, done, x = env.step(action)
             score += reward
             env.render()
-            time.sleep(20 / 1000)
+            i += 1
+            if i % 100 == 0:
+                print(f'Score so far: {score}')
         print(f'Asteroids score [{i}]: {score}')
         runs += 1
 

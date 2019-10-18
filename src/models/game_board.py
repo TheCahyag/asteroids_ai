@@ -23,6 +23,7 @@ class GameBoard:
         GameBoard.GAME_OBJECTS[frame] = []
         self.ship: en.Ship = None
         self.asteroids: [en.Asteroid] = []
+        self.current_missiles: [en.Missile] = []
 
     def is_location_explored(self, x: int, y: int):
         return self.explored_mapping[x][y]
@@ -60,6 +61,8 @@ class GameBoard:
             self.ship = entity
         elif isinstance(entity, en.Asteroid):
             self.asteroids.append(entity)
+        elif isinstance(entity, en.Missile):
+            self.current_missiles.append(entity)
 
     def get_last_ship(self):
         """
@@ -89,7 +92,7 @@ class GameBoard:
         i = self.frame - 1
         while i >= 0:
             for entity in GameBoard.GAME_OBJECTS[i]:
-                if isinstance(entity, en.Asteroid):
+                if isinstance(entity, en.Asteroid) and not entity.transposed:
                     asteroids.append(entity)
             if len(asteroids) > 0:
                 return asteroids
