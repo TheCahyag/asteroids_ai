@@ -1,6 +1,5 @@
 import argparse
 import random
-import time
 
 import gym
 from gym import logger
@@ -24,7 +23,7 @@ parser.add_argument('agent', metavar='agent', type=str, choices=['random', 'dis-
                          'Available Agents: random, dis-min, deg-min')
 parser.add_argument('--runs', dest='runs', metavar='N', type=int, nargs=1, default=1,
                     help='Number of games to play (default: 1)')
-parser.add_argument('--seed', dest='seed', metavar='S', type=int, nargs=1, default=random.randint,
+parser.add_argument('--seed', dest='seed', metavar='S', type=int, nargs=1, default=random.randint(1, 1000000),
                     help='Seed to set for the environment (default: random integer)')
 
 if __name__ == '__main__':
@@ -42,9 +41,12 @@ if __name__ == '__main__':
         agent = DistanceMinimizing(env.action_space)
     elif agent_arg == 'deg-min':
         agent = DegreeMinimizing(env.action_space)
-    env.seed(asteroids_args.seed[0])
-    runs = 0
-    while runs < asteroids_args.runs[0]:
+    seed = asteroids_args.seed if isinstance(asteroids_args.seed, int) else asteroids_args.seed[0]
+    runs = asteroids_args.runs if isinstance(asteroids_args.runs, int) else asteroids_args.runs[0]
+    env.seed(seed)
+    total_runs = 0
+    total_score = 0
+    while total_runs < runs:
 
         reward = 0
         done = False
@@ -56,12 +58,13 @@ if __name__ == '__main__':
             action = agent.act(ob, reward, done)
             ob, reward, done, x = env.step(action)
             score += reward
-            env.render()
+            # env.render()
             i += 1
-            if i % 100 == 0:
-                print(f'Score so far: {score}')
         print(f'Asteroids score [{i}]: {score}')
-        runs += 1
+        total_runs += 1
+        total_score += score
+
+    print(f'Average score across {total_runs} runs: {total_score / total_runs}')
 
     # Close the env and write monitor result info to disk
     env.close()
