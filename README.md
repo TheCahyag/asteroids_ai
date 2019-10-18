@@ -15,7 +15,11 @@ Possible agents include: `random`, `dis-min`, and `deg-min`
 Example: `python asteroids_agents.py dis-min --runs 1 --seed 123`  
   
 Running these programs requires gym, gym-atari and a python version of 3.6 or higher, 
-as specified in the included Pipfile
+as specified in the included Pipfile.
+  
+If you do not wish to use the asteroids_agents as your main file, you can uncomment the 
+agent you wish to run in the `gym-play1.py` file on lines 11-13. The DirectionMinimizing agent is set 
+by default.
   
 ### Packages
 `agents`: Contains classes and an abstract class for controlling the behavior of the various agents  
